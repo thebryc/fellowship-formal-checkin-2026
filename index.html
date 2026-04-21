@@ -933,11 +933,22 @@ const App = {
       : `<option value="Guardian">Guardian</option>
          <option value="Mentor">Mentor</option>
          <option value="Family">Family</option>
-         <option value="Friend">Friend</option>`;
+         <option value="Friend">Friend</option>
+         <option value="Donor">Donor</option>`;
 
     const extraField = isFellow
       ? ``
       : `<div class="form-group no-icon"><label>Fellow They're With</label><input type="text" id="wi-extra" placeholder="Optional" /></div>`;
+
+    const conditionalFields = isFellow ? `` : `
+      <div class="form-group no-icon" id="wi-siblings-wrap">
+        <label>Number of Children Accompanying</label>
+        <input type="number" id="wi-siblings" min="0" max="30" placeholder="0" style="width:100%" />
+      </div>
+      <div class="form-group no-icon" id="wi-org-wrap" style="display:none">
+        <label>Organization</label>
+        <input type="text" id="wi-org" placeholder="Organization name" />
+      </div>`;
 
     return `
       <div class="checkin-view">
@@ -990,6 +1001,7 @@ const App = {
                 </div>
                 ${extraField}
               </div>
+              ${conditionalFields}
               <button class="btn-primary" id="walkin-submit">Check In Now</button>
             </div>
             <div class="scroll-bottom-cap"></div>
@@ -1015,6 +1027,21 @@ const App = {
       document.getElementById('walkin-panel').style.display = open ? 'block' : 'none';
       document.getElementById('walkin-toggle').textContent  = open ? '− Hide Walk-In Form' : '+ Walk-In · Add Your Name';
     };
+
+    const roleEl = document.getElementById('wi-role');
+    if (roleEl) {
+      roleEl.addEventListener('change', () => {
+        const r = roleEl.value;
+        const siblingsWrap = document.getElementById('wi-siblings-wrap');
+        const orgWrap      = document.getElementById('wi-org-wrap');
+        if (siblingsWrap) siblingsWrap.style.display = r === 'Guardian' ? 'block' : 'none';
+        if (orgWrap) {
+          orgWrap.style.display = r === 'Donor' ? 'block' : 'none';
+          if (r === 'Donor' && !document.getElementById('wi-org').value)
+            document.getElementById('wi-org').value = 'Bank of St. Francisville';
+        }
+      });
+    }
 
     document.getElementById('walkin-submit').onclick = () => this.submitWalkin(type);
   },
@@ -1064,10 +1091,12 @@ const App = {
   },
 
   submitWalkin(type) {
-    const first = document.getElementById('wi-first').value.trim();
-    const last  = document.getElementById('wi-last').value.trim();
-    const role  = document.getElementById('wi-role').value;
-    const extra = document.getElementById('wi-extra')?.value.trim() || '';
+    const first    = document.getElementById('wi-first').value.trim();
+    const last     = document.getElementById('wi-last').value.trim();
+    const role     = document.getElementById('wi-role').value;
+    const extra    = document.getElementById('wi-extra')?.value.trim() || '';
+    const siblings = document.getElementById('wi-siblings')?.value || '';
+    const org      = document.getElementById('wi-org')?.value.trim() || '';
 
     if (!first || !last) {
       ['wi-first','wi-last'].forEach(id => {
@@ -1082,7 +1111,10 @@ const App = {
     const name = `${first} ${last}`;
     const now  = new Date();
     store.checkins.push({
-      name, role, type, extra, walkin: true,
+      name, role, type, extra,
+      ...(siblings !== '' && role === 'Guardian' ? { siblings: parseInt(siblings) || 0 } : {}),
+      ...(org && role === 'Donor' ? { org } : {}),
+      walkin: true,
       time: now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
       date: now.toLocaleDateString()
     });
@@ -1196,7 +1228,7 @@ const App = {
     const rows = store.checkins.length
       ? store.checkins.map((c, i) => `
           <tr data-search="${(c.name + c.role + c.type).toLowerCase()}">
-            <td style="font-weight:500; color:var(--text)">${c.name}</td>
+            <td style="font-weight:500; color:var(--text)">${c.name}${c.siblings != null ? `<span style="font-size:0.72rem;color:var(--text-dim);margin-left:6px">+${c.siblings} sibling${c.siblings !== 1 ? 's' : ''}</span>` : ''}${c.org ? `<span style="font-size:0.72rem;color:var(--text-dim);margin-left:6px">${c.org}</span>` : ''}</td>
             <td><span class="badge ${c.type === 'fellow' ? 'badge-fellow' : 'badge-guest'}">${c.role || c.type}</span></td>
             <td>${c.walkin ? '<span class="badge badge-gold">Walk-In</span>' : '<span class="badge badge-rsvp">RSVP</span>'}</td>
             <td style="color:var(--text-dim); font-size:0.78rem; font-family:Raleway,sans-serif">${c.time}</td>
