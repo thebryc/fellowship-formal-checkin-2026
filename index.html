@@ -9,6 +9,7 @@
   <link rel="stylesheet" href="https://use.typekit.net/hte4vgd.css">
   <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
@@ -747,12 +748,12 @@ const GID            = '987651937';
 
 /* ─── Firebase config — replace with yours from Firebase Console ─── */
 const FIREBASE_CONFIG = {
-  apiKey:            "YOUR_API_KEY",
-  authDomain:        "YOUR_PROJECT.firebaseapp.com",
-  projectId:         "YOUR_PROJECT_ID",
-  storageBucket:     "YOUR_PROJECT.appspot.com",
-  messagingSenderId: "YOUR_SENDER_ID",
-  appId:             "YOUR_APP_ID"
+  apiKey:            "AIzaSyAsXK1AwuY14dm46U-4GSD1vHVDGHi8fso",
+  authDomain:        "fellowship-formal-2026.firebaseapp.com",
+  projectId:         "fellowship-formal-2026",
+  storageBucket:     "fellowship-formal-2026.firebasestorage.app",
+  messagingSenderId: "842794476404",
+  appId:             "1:842794476404:web:ccaa101d9d42b49704c221"
 };
 
 let fbAuth = null;
@@ -763,6 +764,7 @@ function initFirebase() {
   try {
     firebase.initializeApp(FIREBASE_CONFIG);
     fbAuth = firebase.auth();
+    window.db = firebase.firestore();
     fbAuth.onAuthStateChanged(user => {
       currentUser = user;
       App._renderAuthSection();
