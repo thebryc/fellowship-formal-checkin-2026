@@ -798,6 +798,23 @@ function parseCSVRow(row) {
   result.push(cur.trim());
   return result;
 }
+  // Import the functions you need from the SDKs you need
+import { initializeApp } from "firebase/app";
+// TODO: Add SDKs for Firebase products that you want to use
+// https://firebase.google.com/docs/web/setup#available-libraries
+
+// Your web app's Firebase configuration
+const firebaseConfig = {
+  apiKey: "AIzaSyAsXK1AwuY14dm46U-4GSD1vHVDGHi8fso",
+  authDomain: "fellowship-formal-2026.firebaseapp.com",
+  projectId: "fellowship-formal-2026",
+  storageBucket: "fellowship-formal-2026.firebasestorage.app",
+  messagingSenderId: "842794476404",
+  appId: "1:842794476404:web:ccaa101d9d42b49704c221"
+};
+
+// Initialize Firebase
+const app = initializeApp(firebaseConfig);
 
 /* ═══════════════════════════════════════
    SVG ASSETS
