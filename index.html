@@ -1170,15 +1170,24 @@ const App = {
       </div>`;
     document.body.appendChild(overlay);
 
-    const attempt = () => {
-      if (document.getElementById('pin-input').value === ADMIN_PIN) {
-        overlay.remove(); this.go('admin');
-      } else {
-        document.getElementById('pin-error').textContent = 'Incorrect PIN — try again.';
-        document.getElementById('pin-input').value = '';
-        document.getElementById('pin-input').focus();
-      }
-    };
+const attempt = () => {
+  if (document.getElementById('pin-input').value === ADMIN_PIN) {
+    initFirebase();
+    const provider = new firebase.auth.GoogleAuthProvider();
+    fbAuth.signInWithPopup(provider)
+      .then(() => {
+        overlay.remove();
+        this.go('admin');
+      })
+      .catch(err => {
+        document.getElementById('pin-error').textContent = '✕ Google sign-in failed — ' + err.message;
+      });
+  } else {
+    document.getElementById('pin-error').textContent = 'Incorrect PIN — try again.';
+    document.getElementById('pin-input').value = '';
+    document.getElementById('pin-input').focus();
+  }
+};
 
     document.getElementById('pin-ok').onclick    = attempt;
     document.getElementById('pin-cancel').onclick = () => overlay.remove();
