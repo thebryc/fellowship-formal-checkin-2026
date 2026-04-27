@@ -566,6 +566,26 @@
     }
   </style>
 </head>
+
+<!-- Firebase CDN -->
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
+
+<script>
+  const firebaseConfig = {
+    apiKey:            "AIzaSyAsXK1AwuY14dm46U-4GSD1vHVDGHi8fso",
+    authDomain:        "fellowship-formal-2026.firebaseapp.com",
+    projectId:         "fellowship-formal-2026",
+    storageBucket:     "fellowship-formal-2026.firebasestorage.app",
+    messagingSenderId: "842794476404",
+    appId:             "1:842794476404:web:ccaa101d9d42b49704c221"
+  };
+  firebase.initializeApp(firebaseConfig);
+  const auth = firebase.auth();
+  const db   = firebase.firestore();
+</script>
+  
 <body>
 
 <canvas id="bg-canvas"></canvas>
@@ -1057,6 +1077,13 @@ const App = {
       date: now.toLocaleDateString()
     });
     saveStore();
+      // Save to Firestore
+  db.collection('checkIns').add({
+    rsvpId: id, name: p.name, role: p.role, type: p.type, walkin: false,
+    time: now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+    date: now.toLocaleDateString(),
+    timestamp: firebase.firestore.FieldValue.serverTimestamp()
+  });
     this.go('success', { name: p.name, role: p.role, walkin: false });
   },
 
@@ -1089,6 +1116,13 @@ const App = {
       date: now.toLocaleDateString()
     });
     saveStore();
+    // Save to Firestore
+    db.collection('checkIns').add({
+      name, role, type, walkin: true,
+      time: now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+      date: now.toLocaleDateString(),
+  timestamp: firebase.firestore.FieldValue.serverTimestamp()
+});
     this.go('success', { name, role, walkin: true });
   },
 
@@ -1167,14 +1201,24 @@ const App = {
       </div>`;
     document.body.appendChild(overlay);
 
-    const attempt = () => {
-      if (document.getElementById('pin-input').value === ADMIN_PIN) {
-        overlay.remove(); this.go('admin');
-      } else {
-        document.getElementById('pin-error').textContent = 'Incorrect PIN — try again.';
-        document.getElementById('pin-input').value = '';
-        document.getElementById('pin-input').focus();
-      }
+const attempt = () => {
+  if (document.getElementById('pin-input').value === ADMIN_PIN) {
+    // PIN correct — now trigger Google sign-in
+    const provider = new firebase.auth.GoogleAuthProvider();
+    auth.signInWithPopup(provider)
+      .then(() => {
+        overlay.remove();
+        this.go('admin');
+      })
+      .catch(err => {
+        document.getElementById('pin-error').textContent = 'Google sign-in failed: ' + err.message;
+      });
+  } else {
+    document.getElementById('pin-error').textContent = 'Incorrect PIN — try again.';
+    document.getElementById('pin-input').value = '';
+    document.getElementById('pin-input').focus();
+  }
+};
     };
 
     document.getElementById('pin-ok').onclick    = attempt;
