@@ -9,7 +9,6 @@
   <link rel="stylesheet" href="https://use.typekit.net/hte4vgd.css">
   <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-auth-compat.js"></script>
-  <script src="https://accounts.google.com/gsi/client" async defer></script>
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
@@ -576,27 +575,6 @@
 <button class="admin-fab" onclick="App.showAdminLogin()">⚙ Admin</button>
 
 <script>
-  const CLIENT_ID = "605895528468-qh8fb2j0f9lhko6185c505eahn64pnae.apps.googleusercontent.com";
-
-  function initGoogleAuth() {
-  google.accounts.id.initialize({
-    client_id: CLIENT_ID,
-    callback: handleGoogleSignIn
-  });
-}
-
-function handleGoogleSignIn(response) {
-  const payload = JSON.parse(atob(response.credential.split('.')[1]));
-  const allowedDomains = ['thebryc.org']; // restrict to your org's email domain
-  
-  if (allowedDomains.some(domain => payload.email.endsWith(domain))) {
-    // grant admin access
-    App.showAdminPanel();
-  } else {
-    alert('Access denied. You must use an authorized account.');
-  }
-}
-
 (function () {
   const c   = document.getElementById('bg-canvas');
   const ctx = c.getContext('2d');
@@ -818,7 +796,7 @@ function parseCSVRow(row) {
   return result;
 }
 
-const BRYC_LOGO = `<img src="/fellowship-formal-checkin-2026/Black_Logo.png" alt="BRYC Logo" style="width:100%;height:100%;object-fit:contain;border-radius:50%" />`;
+const BRYC_LOGO = `<img src="/senior-renaissance/Black_Logo.png" alt="BRYC Logo" style="width:100%;height:100%;object-fit:contain;border-radius:50%" />`;
   
 const CORNER_SVG = `
 <svg viewBox="0 0 28 28" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -1186,28 +1164,17 @@ const App = {
         <button class="btn-primary" id="pin-ok" style="margin-top:4px">Enter</button>
         <button class="back-btn" style="margin:14px auto 0; display:flex; justify-content:center" id="pin-cancel">Cancel</button>
       </div>`;
-    document.body.appendChild(overlay);x4
+    document.body.appendChild(overlay);
 
     const attempt = () => {
       if (document.getElementById('pin-input').value === ADMIN_PIN) {
-        overlay.remove(); google.accounts.id.prompt();
+        overlay.remove(); this.go('admin');
       } else {
         document.getElementById('pin-error').textContent = 'Incorrect PIN — try again.';
         document.getElementById('pin-input').value = '';
         document.getElementById('pin-input').focus();
       }
     };
-
-    handleGoogleSignIn(response) {
-  const credential = firebase.auth.GoogleAuthProvider.credential(response.credential);
-  firebase.auth().signInWithCredential(credential)
-    .then(() => {
-      this.go('admin');
-    })
-    .catch(() => {
-      alert('Access denied. This Google account is not authorized.');
-    });
-}
 
     document.getElementById('pin-ok').onclick    = attempt;
     document.getElementById('pin-cancel').onclick = () => overlay.remove();
